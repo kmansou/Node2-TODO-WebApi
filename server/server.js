@@ -1,50 +1,26 @@
-const mongoose = require('mongoose');
+var express = require('express');
+var bodyParser = require('body-parser');
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/TodoApp');
+var { mongoose } = require('./db/mongoose.js');
+var { Todo } = require('./models/todo.js');
+var { User } = require('./models/user.js');
 
-const Todo = mongoose.model('Todo', {
-    text: {
-        type: String,
-        required: true,
-        trim: true,
-        minLength: 1
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    },
-    completedAt: {
-        type: Number,
-        default: null
-    }
+var app = express();
+
+app.use(bodyParser.json());
+
+app.post('/todos', (req, res) => {
+    var todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc) => {
+        res.status(200).send(doc);
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
 });
 
-const User = mongoose.model('User', {
-    email: {
-        type: String,
-        required: true,
-        trim: true,
-        minLength: 1
-    }
-});
-
-var newToDo = new Todo({
-    text: 'finish udemy course by today'
-});
-
-newToDo.save().then((doc) => {
-    console.log(JSON.stringify(doc, undefined, 2));
-}).catch((err) => {
-    console.error('error inserting new ToDo document', err);
-});
-
-var newUser = new User({
-    email: 'karim.mansour@example.com'
-});
-
-newUser.save().then((doc) => {
-    console.log(JSON.stringify(doc, undefined, 2));
-}).catch((err) => {
-    console.error('error inserting new user document', err);
+app.listen(3000, () => {
+    console.log('Started on port 3000');
 });
